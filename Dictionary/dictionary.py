@@ -1,19 +1,38 @@
 import json
+from difflib import get_close_matches
 
-data = json.load(open("D:/Python_Codes/Dictionary/data.json"))
-
-def get_definition(word):
-    """Retrieve the definition of a word from the loaded JSON data."""
-    if word in data:
-        return data[word]
+def get_definition(w):
+    
+    if w in data:
+        return data[w]
+    elif w.title() in data:
+        return data[w.title()]
+    elif w.upper() in data: #in case user enters words like USA or NATO
+        return data[w.upper()]
+    elif len(get_close_matches(w, data.keys())) > 0:
+        yn = input("Did you mean %s instead? Enter Y if yes, or N if no: " % get_close_matches(w, data.keys())[0])
+        if yn == "Y":
+            return data[get_close_matches(w, data.keys())[0]]
+        elif yn == "N":
+            return "The word doesn't exist. Please double check it."
+        else:
+            return "We didn't understand your entry."
     else:
-        return print(f"The word '{word}' was not found in the dictionary. Try another word...")
+        return "The word doesn't exist. Please double check it."
+
+
+data = json.load(open("D:/Python_Codes/Dictionary/data.json"))    
+answer = "Y"
+
+while answer == "Y":
+    word = input("Enter word: ")
+    word = word.lower()
+    output = get_definition(word)
+
+    if type(output) == list:
+        for item in output:
+            print(item)
+    else:
+        print(output)
     
-    
-
-
-word = input("Enter a word: ")
-word = word.lower()
-
-definition = get_definition(word)
-print(f"Definition of {word}: {definition}")
+    answer = input("Do you want to search another word? Enter Y for yes or N for no: ")   
