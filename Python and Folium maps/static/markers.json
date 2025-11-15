@@ -1,0 +1,7 @@
+[
+  {"name": "New York, USA", "lat": 40.7128, "lon": -74.0060, "desc": "Population: 8.3M"},
+  {"name": "London, UK", "lat": 51.5074, "lon": -0.1278, "desc": "Capital of UK"},
+  {"name": "Tokyo, Japan", "lat": 35.6895, "lon": 139.6917, "desc": "Capital of Japan"},
+  {"name": "Sydney, Australia", "lat": -33.8688, "lon": 151.2093, "desc": "Harbour city"},
+  {"name": "Cairo, Egypt", "lat": 30.0444, "lon": 31.2357, "desc": "Largest city in Arab world"}
+]

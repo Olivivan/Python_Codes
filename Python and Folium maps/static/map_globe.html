@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>3D Globe Map</title>
+    <style>
+      body { margin: 0; overflow: hidden; font-family: Arial, Helvetica, sans-serif }
+      #globeViz { position: absolute; top: 0; left: 0; right: 0; bottom: 0 }
+      #controls { position: absolute; left: 10px; top: 10px; background: rgba(255,255,255,0.9); padding: 8px; border-radius:6px; z-index:10 }
+      #search { width: 200px }
+      .btn { margin: 2px }
+    </style>
+  </head>
+  <body>
+    <div id="globeViz"></div>
+    <div id="controls">
+      <div>
+        <input id="search" placeholder="Search city..." />
+        <button id="btnSearch">Search</button>
+      </div>
+      <div style="margin-top:6px">
+        <label><input type="checkbox" id="togglePoints" checked /> Show points</label><br>
+        <label><input type="checkbox" id="toggleArcs" checked /> Show arcs</label>
+      </div>
+      <div style="margin-top:6px">
+        <button id="zoomIn" class="btn">Zoom In</button>
+        <button id="zoomOut" class="btn">Zoom Out</button>
+      </div>
+      <div style="margin-top:6px; font-size:12px; color:#333">Tip: drag to rotate globe</div>
+    </div>
+
+    <!-- Load dependencies from CDN -->
+    <script src="https://unpkg.com/three@0.152.2/build/three.min.js"></script>
+    <script src="https://unpkg.com/three-globe"></script>
+    <script>
+      // Basic three-globe + three.js scene setup
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.getElementById('globeViz').appendChild(renderer.domElement);
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera();
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      camera.position.z = 300;
+
+      // Stronger, warmer lighting for better visibility
+      const ambient = new THREE.AmbientLight(0xffffff, 0.9);
+      scene.add(ambient);
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.9);
+      directionalLight.position.set(5, 3, 5);
+      scene.add(directionalLight);
+      const hemi = new THREE.HemisphereLight(0xaaaaee, 0x444444, 0.6);
+      scene.add(hemi);
+
+      // Use a brighter daytime earth texture and topology for a less-dark appearance
+      const Globe = new ThreeGlobe({animateIn: true})
+        .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-day.jpg')
+        .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png');
+
+      scene.add(Globe);
+
+      // Controls state
+      let pointsMesh = null; // handled by three-globe
+      // store arcs outside so toggle works
+      let arcs = [];
+
+      // Load data
+      let markers = [];
+      fetch('/data').then(r => r.json()).then(data => {
+        markers = data || [];
+        // prepare lowercase fields for search
+        markers.forEach(m => { m._lcName = (m.name||'').toLowerCase(); m._lcDesc = (m.desc||'').toLowerCase(); });
+        Globe.pointsData(markers)
+             .pointLat(d => d.lat)
+             .pointLng(d => d.lon)
+             .pointColor(() => 'rgba(255,0,0,0.9)')
+             .pointAltitude(0.01)
+             .pointRadius(0.3);
+
+        // Create some arcs for demo connecting each to the first
+        arcs = [];
+        if (markers.length > 1) {
+          for (let i=1;i<markers.length;i++) {
+            arcs.push({
+              startLat: markers[0].lat, startLng: markers[0].lon,
+              endLat: markers[i].lat, endLng: markers[i].lon,
+              color: [['rgba(255,0,0,0.6)', 'rgba(0,255,0,0.6)']]
+            });
+          }
+        }
+        Globe.arcsData(arcs)
+             .arcColor(d => d.color[0][0])
+             .arcStroke(d => 0.5)
+             .arcDashLength(0.4)
+             .arcDashGap(4)
+             .arcDashInitialGap(() => Math.random() * 5)
+             .arcDashAnimateTime(1000);
+      });
+
+      // Resize handling
+      window.addEventListener('resize', () => {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+      });
+
+      // Basic auto-rotation
+      let rotationSpeed = 0.002;
+      function animate() {
+        Globe.rotation.y += rotationSpeed;
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+      }
+      animate();
+
+      // Utility: convert lat/lng to 3D cartesian on sphere radius
+      function latLngToCartesian(lat, lon, radius=100) {
+        const phi = (90 - lat) * Math.PI / 180;
+        const theta = (lon + 180) * Math.PI / 180;
+        const x = -radius * Math.sin(phi) * Math.cos(theta);
+        const z = radius * Math.sin(phi) * Math.sin(theta);
+        const y = radius * Math.cos(phi);
+        return new THREE.Vector3(x,y,z);
+      }
+
+      // Controls: search and zoom
+      document.getElementById('btnSearch').onclick = async () => {
+        const qraw = document.getElementById('search').value || '';
+        const q = qraw.toLowerCase().trim();
+        if (!q) return;
+        // If markers not loaded yet, fetch them now
+        if (!markers || markers.length === 0) {
+          try {
+            const res = await fetch('/data');
+            markers = await res.json();
+            markers.forEach(m => { m._lcName = (m.name||'').toLowerCase(); m._lcDesc = (m.desc||'').toLowerCase(); });
+            Globe.pointsData(markers);
+          } catch (err) {
+            alert('Failed to load marker data');
+            return;
+          }
+        }
+
+        // find best match by name or description
+        let found = markers.find(m => (m._lcName||'').includes(q));
+        if (!found) found = markers.find(m => (m._lcDesc||'').includes(q));
+        if (!found) {
+          // try partial tokens
+          const tokens = q.split(/\s+/).filter(Boolean);
+          found = markers.find(m => tokens.every(t => ((m._lcName||'') + ' ' + (m._lcDesc||'')).includes(t)));
+        }
+        if (!found) { alert('No match for: ' + qraw); return; }
+
+        // Move camera to point
+        const target = latLngToCartesian(found.lat, found.lon, 100);
+        const newCamPos = target.clone().multiplyScalar(2.2);
+        camera.position.copy(newCamPos);
+        camera.lookAt(target);
+        rotationSpeed = 0; // stop auto-rotate when zoomed in
+      };
+
+      document.getElementById('zoomIn').onclick = () => { camera.position.multiplyScalar(0.85); };
+      document.getElementById('zoomOut').onclick = () => { camera.position.multiplyScalar(1.15); };
+
+      // Mouse wheel zoom (scroll) — works on the canvas
+      renderer.domElement.addEventListener('wheel', (ev) => {
+        ev.preventDefault();
+        // deltaY > 0 means scroll down (zoom out), <0 zoom in
+        const delta = Math.sign(ev.deltaY) * Math.min(5, Math.abs(ev.deltaY));
+        const factor = delta > 0 ? 1.08 : 0.92;
+        camera.position.multiplyScalar(factor);
+      }, { passive: false });
+
+      // Toggle layers
+      document.getElementById('togglePoints').onchange = (e) => {
+        Globe.pointsData(e.target.checked ? markers : []);
+      };
+      document.getElementById('toggleArcs').onchange = (e) => {
+        Globe.arcsData(e.target.checked ? arcs : []);
+      };
+
+    </script>
+  </body>
+</html>
