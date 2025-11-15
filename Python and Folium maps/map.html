@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_7008475e6b5e9186dd363b9753fb2707 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_7008475e6b5e9186dd363b9753fb2707" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_7008475e6b5e9186dd363b9753fb2707 = L.map(
+                "map_7008475e6b5e9186dd363b9753fb2707",
+                {
+                    center: [42.63656666666667, 21.852633333333333],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 2,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_57937464f18ae245573d3be859f8ac32 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_57937464f18ae245573d3be859f8ac32.addTo(map_7008475e6b5e9186dd363b9753fb2707);
+        
+    
+            var circle_marker_74373cdb72f6bb92e7f31f1e9d9b48fc = L.circleMarker(
+                [40.7128, -74.006],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 3}
+            ).addTo(map_7008475e6b5e9186dd363b9753fb2707);
+        
+    
+        var popup_32cbf10f731404a24809f9d04d4cdaa0 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_596f0efe708ae2be4bf2821d4342f7a3 = $(`<div id="html_596f0efe708ae2be4bf2821d4342f7a3" style="width: 100.0%; height: 100.0%;">New York, USA</div>`)[0];
+                popup_32cbf10f731404a24809f9d04d4cdaa0.setContent(html_596f0efe708ae2be4bf2821d4342f7a3);
+            
+        
+
+        circle_marker_74373cdb72f6bb92e7f31f1e9d9b48fc.bindPopup(popup_32cbf10f731404a24809f9d04d4cdaa0)
+        ;
+
+        
+    
+    
+            circle_marker_74373cdb72f6bb92e7f31f1e9d9b48fc.bindTooltip(
+                `<div>
+                     New York, USA
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_13b9a628776325c4c986839e4057a820 = L.circleMarker(
+                [51.5074, -0.1278],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 3}
+            ).addTo(map_7008475e6b5e9186dd363b9753fb2707);
+        
+    
+        var popup_31b75cfbedb182b77c547785dfc36270 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_400a27b01d296abc4d7833afa346f947 = $(`<div id="html_400a27b01d296abc4d7833afa346f947" style="width: 100.0%; height: 100.0%;">London, UK</div>`)[0];
+                popup_31b75cfbedb182b77c547785dfc36270.setContent(html_400a27b01d296abc4d7833afa346f947);
+            
+        
+
+        circle_marker_13b9a628776325c4c986839e4057a820.bindPopup(popup_31b75cfbedb182b77c547785dfc36270)
+        ;
+
+        
+    
+    
+            circle_marker_13b9a628776325c4c986839e4057a820.bindTooltip(
+                `<div>
+                     London, UK
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_9a9b3f8e9c0a4252af419c4e86d8b9e8 = L.circleMarker(
+                [35.6895, 139.6917],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 6, "stroke": true, "weight": 3}
+            ).addTo(map_7008475e6b5e9186dd363b9753fb2707);
+        
+    
+        var popup_038981aa69de36d69025b8106ece7fed = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_0d8716d829d112c6a82a5ae2a3531a9d = $(`<div id="html_0d8716d829d112c6a82a5ae2a3531a9d" style="width: 100.0%; height: 100.0%;">Tokyo, Japan</div>`)[0];
+                popup_038981aa69de36d69025b8106ece7fed.setContent(html_0d8716d829d112c6a82a5ae2a3531a9d);
+            
+        
+
+        circle_marker_9a9b3f8e9c0a4252af419c4e86d8b9e8.bindPopup(popup_038981aa69de36d69025b8106ece7fed)
+        ;
+
+        
+    
+    
+            circle_marker_9a9b3f8e9c0a4252af419c4e86d8b9e8.bindTooltip(
+                `<div>
+                     Tokyo, Japan
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+</script>
+</html>
