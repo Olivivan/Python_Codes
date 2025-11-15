@@ -68,16 +68,7 @@
 
       // Load data
       let markers = [];
-      fetch('/data').then(r => r.json()).then(data => {
-        markers = data || [];
-        // prepare lowercase fields for search
-        markers.forEach(m => { m._lcName = (m.name||'').toLowerCase(); m._lcDesc = (m.desc||'').toLowerCase(); });
-        Globe.pointsData(markers)
-             .pointLat(d => d.lat)
-             .pointLng(d => d.lon)
-             .pointColor(() => 'rgba(255,0,0,0.9)')
-             .pointAltitude(0.01)
-             .pointRadius(0.3);
+        fetch('/data').then(r => r.json()).then(data => { markers = data || []; });
 
         // Create some arcs for demo connecting each to the first
         arcs = [];
@@ -125,53 +116,103 @@
         return new THREE.Vector3(x,y,z);
       }
 
-      // Controls: search and zoom
+      // Controls: search, zoom, and pointer drag-to-rotate
+
+      // Highlight management
+      let highlight = null;
+      function clearHighlight() {
+        if (highlight) {
+          scene.remove(highlight);
+          try { highlight.geometry.dispose(); } catch(e){}
+          try { highlight.material.dispose(); } catch(e){}
+          highlight = null;
+        }
+      }
+
+      // Search handler: calls server-side /search?q=
       document.getElementById('btnSearch').onclick = async () => {
         const qraw = document.getElementById('search').value || '';
-        const q = qraw.toLowerCase().trim();
+        const q = qraw.trim();
         if (!q) return;
-        // If markers not loaded yet, fetch them now
-        if (!markers || markers.length === 0) {
-          try {
-            const res = await fetch('/data');
-            markers = await res.json();
-            markers.forEach(m => { m._lcName = (m.name||'').toLowerCase(); m._lcDesc = (m.desc||'').toLowerCase(); });
-            Globe.pointsData(markers);
-          } catch (err) {
-            alert('Failed to load marker data');
-            return;
-          }
-        }
+        try {
+          const res = await fetch('/search?q=' + encodeURIComponent(q));
+          const results = await res.json();
+          if (!results || results.length === 0) { alert('No match for: ' + qraw); return; }
+          const found = results[0];
+          // center camera
+          const target = latLngToCartesian(found.lat, found.lon, 100);
+          const newCamPos = target.clone().multiplyScalar(2.2);
+          camera.position.copy(newCamPos);
+          camera.lookAt(target);
+          rotationSpeed = 0;
 
-        // find best match by name or description
-        let found = markers.find(m => (m._lcName||'').includes(q));
-        if (!found) found = markers.find(m => (m._lcDesc||'').includes(q));
-        if (!found) {
-          // try partial tokens
-          const tokens = q.split(/\s+/).filter(Boolean);
-          found = markers.find(m => tokens.every(t => ((m._lcName||'') + ' ' + (m._lcDesc||'')).includes(t)));
+          // add a temporary highlight sphere
+          clearHighlight();
+          const geom = new THREE.SphereGeometry(2.5, 16, 12);
+          const mat = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+          highlight = new THREE.Mesh(geom, mat);
+          highlight.position.copy(target);
+          scene.add(highlight);
+          // remove highlight after 8s
+          setTimeout(clearHighlight, 8000);
+        } catch (err) {
+          console.error(err);
+          alert('Search failed');
         }
-        if (!found) { alert('No match for: ' + qraw); return; }
-
-        // Move camera to point
-        const target = latLngToCartesian(found.lat, found.lon, 100);
-        const newCamPos = target.clone().multiplyScalar(2.2);
-        camera.position.copy(newCamPos);
-        camera.lookAt(target);
-        rotationSpeed = 0; // stop auto-rotate when zoomed in
       };
 
+      // Zoom buttons
       document.getElementById('zoomIn').onclick = () => { camera.position.multiplyScalar(0.85); };
       document.getElementById('zoomOut').onclick = () => { camera.position.multiplyScalar(1.15); };
 
       // Mouse wheel zoom (scroll) — works on the canvas
       renderer.domElement.addEventListener('wheel', (ev) => {
         ev.preventDefault();
-        // deltaY > 0 means scroll down (zoom out), <0 zoom in
         const delta = Math.sign(ev.deltaY) * Math.min(5, Math.abs(ev.deltaY));
         const factor = delta > 0 ? 1.08 : 0.92;
         camera.position.multiplyScalar(factor);
       }, { passive: false });
+
+      // Pointer drag to rotate globe (grab-to-drag)
+      let isDragging = false;
+      let lastX = 0, lastY = 0;
+      const dragSensitivity = 0.005; // tweak for responsiveness
+
+      // Set hand-like cursor on the canvas
+      renderer.domElement.style.cursor = 'grab';
+
+      renderer.domElement.addEventListener('pointerdown', (ev) => {
+        isDragging = true;
+        lastX = ev.clientX;
+        lastY = ev.clientY;
+        rotationSpeed = 0; // stop auto-rotate while user interacts
+        try { ev.target.setPointerCapture(ev.pointerId); } catch(e) {}
+        renderer.domElement.style.cursor = 'grabbing';
+      });
+
+      renderer.domElement.addEventListener('pointermove', (ev) => {
+        if (!isDragging) return;
+        const dx = ev.clientX - lastX;
+        const dy = ev.clientY - lastY;
+        lastX = ev.clientX; lastY = ev.clientY;
+        // rotate globe: horizontal drag -> y-rotation, vertical drag -> x-rotation
+        Globe.rotation.y += dx * dragSensitivity;
+        Globe.rotation.x += dy * dragSensitivity;
+        // clamp x rotation to avoid flipping over
+        const maxX = Math.PI / 2 - 0.01;
+        if (Globe.rotation.x > maxX) Globe.rotation.x = maxX;
+        if (Globe.rotation.x < -maxX) Globe.rotation.x = -maxX;
+      });
+
+      function endDrag(ev) {
+        isDragging = false;
+        try { ev.target.releasePointerCapture && ev.target.releasePointerCapture(ev.pointerId); } catch(e) {}
+        renderer.domElement.style.cursor = 'grab';
+      }
+
+      renderer.domElement.addEventListener('pointerup', endDrag);
+      renderer.domElement.addEventListener('pointercancel', endDrag);
+      renderer.domElement.addEventListener('pointerleave', endDrag);
 
       // Toggle layers
       document.getElementById('togglePoints').onchange = (e) => {
