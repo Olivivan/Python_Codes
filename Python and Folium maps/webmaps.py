@@ -90,6 +90,8 @@ def sample_markers():
 		{'name': 'New York, USA', 'lat': 40.7128, 'lon': -74.0060},
 		{'name': 'London, UK', 'lat': 51.5074, 'lon': -0.1278},
 		{'name': 'Tokyo, Japan', 'lat': 35.6895, 'lon': 139.6917},
+		{'name':'Rio de Janeiro, Brazil', 'lat': -22.9068, 'lon': -43.1729},
+		{'name':'Sydney, Australia', 'lat': -33.8688, 'lon': 151.2093},
 	]
 
 
