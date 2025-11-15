@@ -52,7 +52,7 @@ def get_lat_lon(item):
 	raise KeyError('No lat/lon in item')
 
 
-def make_map(markers, output='map.html', start_location=None, zoom_start=2, tiles='OpenStreetMap'):
+def make_map(markers, output='D:/Python_Codes/Python and Folium maps/map.html', start_location=None, zoom_start=2, tiles='OpenStreetMap'):
 	# Determine center
 	if start_location is None:
 		lats_lons = []
@@ -96,7 +96,7 @@ def sample_markers():
 def main():
 	parser = argparse.ArgumentParser(description='Generate an interactive web map (HTML) using Folium.')
 	parser.add_argument('--data', '-d', help='Path to data file (JSON with list of objects having lat/lon).')
-	parser.add_argument('--output', '-o', default='map.html', help='Output HTML file name')
+	parser.add_argument('--output', '-o', default='D:/Python_Codes/Python and Folium maps/map.html', help='Output HTML file name')
 	parser.add_argument('--tiles', default='OpenStreetMap', help='Tile set (default: OpenStreetMap)')
 	parser.add_argument('--zoom', type=int, default=2, help='Initial zoom level')
 	args = parser.parse_args()
