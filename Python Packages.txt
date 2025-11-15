@@ -1,5 +1,6 @@
  py -m pip install --upgrade pip
  py -m pip install requests matplotlib seaborn scipy pyspark yfinance plotly pandas opencv-python beautifulsoup4 websockets tulip deprecated tensorflow folium jinja2 flask kagglehub
+ pandas_datareader scikit-learn
  
  
  
